@@ -14,6 +14,15 @@ public class ClickSound : MonoBehaviour
     {
         if (sfxSource == null)
             sfxSource = GetComponent<AudioSource>();
+
+        if (SoundManager.Instance != null)
+        {
+            if (sfxSource == null)
+                sfxSource = SoundManager.Instance.sfxSource;
+
+            if (clickClip == null)
+                clickClip = SoundManager.Instance.clickClip;
+        }
     }
 
     void Update()
