@@ -4,15 +4,37 @@ using UnityEngine;
 
 public class ClickSound : MonoBehaviour
 {
-    // Start is called before the first frame update
+    [Header("Audio Sources")]
+    public AudioSource sfxSource;
+
+    [Header("SFX")]
+    public AudioClip clickClip;
+
     void Start()
     {
-        
+        if (sfxSource == null)
+            sfxSource = GetComponent<AudioSource>();
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetMouseButtonDown(0))
+        {
+            PlayClickSound();
+        }
+
+
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            PlayClickSound();
+        }
+    }
+
+    void PlayClickSound()
+    {
+        if (sfxSource != null && clickClip != null)
+        {
+            sfxSource.PlayOneShot(clickClip);
+        }
     }
 }
