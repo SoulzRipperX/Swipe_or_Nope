@@ -5,7 +5,7 @@ public class CharacterController : MonoBehaviour
 {
     [Header("Character Settings")]
     public MainGameController.EntityType type;
-    public float moveSpeed = 8f;
+    public float moveSpeed = 4f;
 
     void Start()
     {
