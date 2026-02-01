@@ -1,9 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-
 
 public class MainGameController : MonoBehaviour
 {
@@ -16,19 +15,30 @@ public class MainGameController : MonoBehaviour
 
     [Header("Time")]
     public float maxTime = 2.5f;
-    private float currentTime;
+    float currentTime;
 
     [Header("Spawn")]
     public Transform spawnPoint;
     public Transform decisionPoint;
 
-    private CharacterController currentCharacter;
+    CharacterController currentCharacter;
+
+    [Header("Swipe Points")]
+    public Transform leftPoint;
+    public Transform rightPoint;
+    public Transform downPoint;
 
     [Header("Theme Prefabs")]
     public List<GameObject> valentinePrefabs;
     public List<GameObject> halloweenPrefabs;
     public List<GameObject> christmasPrefabs;
-    private List<GameObject> currentTheme;
+    List<GameObject> currentTheme;
+
+    [Header("Theme UI")]
+    public GameObject valentineUI;
+    public GameObject halloweenUI;
+    public GameObject christmasUI;
+    GameObject currentThemeUI;
 
     [Header("UI")]
     public Slider timeSlider;
@@ -37,16 +47,9 @@ public class MainGameController : MonoBehaviour
     public TextMeshProUGUI highScoreText;
     public GameObject gameOverPanel;
 
-    [Header("Theme UI Groups")]
-    public GameObject valentineUI;
-    public GameObject halloweenUI;
-    public GameObject christmasUI;
-
-    private GameObject currentThemeUI;
-
-    private int score;
-    private int highScore;
-    private bool isGameOver;
+    int score;
+    int highScore;
+    bool isGameOver;
 
     void Awake()
     {
@@ -62,123 +65,108 @@ public class MainGameController : MonoBehaviour
         timeSlider.value = maxTime;
 
         gameOverPanel.SetActive(false);
+
         SetTheme();
         SpawnCharacter();
         UpdateUI();
+
         SoundManager.Instance?.PlayMainBGM(mainBGM);
     }
 
     void Update()
     {
+        if (isGameOver) return;
+
         currentTime -= Time.deltaTime;
         currentTime = Mathf.Max(currentTime, 0f);
-
         timeSlider.value = currentTime;
 
-        if (currentTime <= 0.8f)
-            timeFillImage.color = Color.red;
-        else
-            timeFillImage.color = Color.white;
+        timeFillImage.color = currentTime <= 0.8f ? Color.red : Color.white;
 
         if (currentTime <= 0f)
-        {
             GameOver();
-        }
-
     }
-
-    public void RestartGame()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
 
     void SpawnCharacter()
     {
         if (currentCharacter != null)
             Destroy(currentCharacter.gameObject);
 
-        GameObject prefab = GetRandomPrefab();
+        GameObject prefab = currentTheme[Random.Range(0, currentTheme.Count)];
         GameObject obj = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
 
         currentCharacter = obj.GetComponent<CharacterController>();
-        currentCharacter.MoveTo(decisionPoint.position);
+        currentCharacter.Init(decisionPoint.position);
     }
 
-    public void CheckAnswer(EntityType input)
+    public void OnSwipe(EntityType input)
     {
-        if (isGameOver || currentCharacter == null) return;
+        if (currentCharacter == null || isGameOver) return;
 
+        Transform target =
+            input == EntityType.Dog ? leftPoint :
+            input == EntityType.Cat ? rightPoint :
+            downPoint;
+
+        currentCharacter.PlaySwipe(input, target.position);
+        CheckAnswer(input);
+    }
+
+    void CheckAnswer(EntityType input)
+    {
         if (input == currentCharacter.type)
         {
-            SoundManager.Instance?.PlayCorrect();
-            Destroy(currentCharacter.gameObject);
-            currentCharacter = null;
-
             score++;
-            AddTime(1.0f);
+            AddTime(1f);
             SetTheme();
             UpdateUI();
-
             SpawnCharacter();
         }
         else
         {
-            SoundManager.Instance?.PlayWrong();
             GameOver();
         }
     }
 
-    void AddTime(float value)
+    void AddTime(float v)
     {
-        currentTime = Mathf.Min(currentTime + value, maxTime);
-        timeSlider.value = currentTime;
+        currentTime = Mathf.Min(currentTime + v, maxTime);
     }
 
     void SetTheme()
     {
-        if (score >= 30)
+        int index = (score / 15) % 3;
+
+        if (index == 0)
         {
-            currentTheme = christmasPrefabs;
-            SwitchThemeUI(christmasUI);
+            currentTheme = valentinePrefabs;
+            SwitchThemeUI(valentineUI);
         }
-        else if (score >= 15)
+        else if (index == 1)
         {
             currentTheme = halloweenPrefabs;
             SwitchThemeUI(halloweenUI);
         }
         else
         {
-            currentTheme = valentinePrefabs;
-            SwitchThemeUI(valentineUI);
+            currentTheme = christmasPrefabs;
+            SwitchThemeUI(christmasUI);
         }
     }
 
-
-    void SwitchThemeUI(GameObject newTheme)
+    void SwitchThemeUI(GameObject ui)
     {
-        if (currentThemeUI == newTheme) return;
-
         if (currentThemeUI != null)
             currentThemeUI.SetActive(false);
 
-        currentThemeUI = newTheme;
+        currentThemeUI = ui;
         currentThemeUI.SetActive(true);
-    }
-
-
-
-    GameObject GetRandomPrefab()
-    {
-        return currentTheme[Random.Range(0, currentTheme.Count)];
     }
 
     void UpdateUI()
     {
-        foreach (var txt in scoreText)
-        {
-            txt.text = $"Score : {score}";
-        }
+        foreach (var t in scoreText)
+            t.text = $"Score : {score}";
 
         highScoreText.text = $"Highest : {highScore}";
     }
@@ -188,15 +176,17 @@ public class MainGameController : MonoBehaviour
         if (isGameOver) return;
         isGameOver = true;
 
-        SoundManager.Instance?.PlayWrong();
         SoundManager.Instance?.StopBGM();
+        gameOverPanel.SetActive(true);
 
         if (score > highScore)
         {
-            highScore = score;
-            PlayerPrefs.SetInt("HighScore", highScore);
+            PlayerPrefs.SetInt("HighScore", score);
         }
+    }
 
-        gameOverPanel.SetActive(true);
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }

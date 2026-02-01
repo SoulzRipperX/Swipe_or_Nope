@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
@@ -6,10 +6,7 @@ public class PlayerController : MonoBehaviour
     private float swipeThreshold = 50f;
     private bool hasAnswered;
 
-    void Start()
-    {
-        
-    }
+    public Animator animator;
 
     void Update()
     {
@@ -53,21 +50,27 @@ public class PlayerController : MonoBehaviour
         if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
         {
             if (delta.x < 0)
-                MainGameController.Instance.CheckAnswer(MainGameController.EntityType.Dog);
+            {
+                animator.SetTrigger("SwipeLeft");
+                MainGameController.Instance.OnSwipe(MainGameController.EntityType.Dog);
+            }
             else
-                MainGameController.Instance.CheckAnswer(MainGameController.EntityType.Cat);
+            {
+                animator.SetTrigger("SwipeRight");
+                MainGameController.Instance.OnSwipe(MainGameController.EntityType.Cat);
+            }
         }
         else if (delta.y < 0)
         {
-            MainGameController.Instance.CheckAnswer(MainGameController.EntityType.Anomaly);
+            animator.SetTrigger("SwipeDown");
+            MainGameController.Instance.OnSwipe(MainGameController.EntityType.Anomaly);
         }
 
-        Invoke(nameof(ResetAnswer), 0.1f);
+        Invoke(nameof(ResetAnswer), 0.2f);
     }
 
     void ResetAnswer()
     {
         hasAnswered = false;
     }
-
 }

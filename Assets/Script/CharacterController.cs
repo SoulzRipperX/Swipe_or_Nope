@@ -1,33 +1,40 @@
 using UnityEngine;
-using System.Collections;
 
 public class CharacterController : MonoBehaviour
 {
-    [Header("Character Settings")]
     public MainGameController.EntityType type;
-    public float moveSpeed = 4f;
+    public Animator animator;
+    public float moveSpeed = 8f;
 
-    void Start()
+    Vector3 targetPos;
+    bool moving;
+
+    public void Init(Vector3 decisionPos)
     {
-        
+        targetPos = decisionPos;
+        moving = true;
     }
 
     void Update()
     {
-        
-    }
-    public void MoveTo(Vector3 target)
-    {
-        StartCoroutine(MoveRoutine(target));
+        if (!moving) return;
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            targetPos,
+            moveSpeed * Time.deltaTime
+        );
     }
 
-    IEnumerator MoveRoutine(Vector3 target)
+    public void PlaySwipe(MainGameController.EntityType input, Vector3 moveTarget)
     {
-        while (Vector3.Distance(transform.position, target) > 0.05f)
-        {
-            transform.position =
-                Vector3.MoveTowards(transform.position, target, moveSpeed * Time.deltaTime);
-            yield return null;
-        }
+        targetPos = moveTarget;
+        moving = true;
+
+        animator.SetTrigger(
+            input == MainGameController.EntityType.Dog ? "SwipeLeft" :
+            input == MainGameController.EntityType.Cat ? "SwipeRight" :
+            "SwipeDown"
+        );
     }
 }
