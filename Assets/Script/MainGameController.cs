@@ -10,35 +10,23 @@ public class MainGameController : MonoBehaviour
 
     public enum EntityType { Dog, Cat, Anomaly }
 
-    [Header("BGM")]
-    public AudioClip mainBGM;
-
     [Header("Time")]
     public float maxTime = 2.5f;
     float currentTime;
 
-    [Header("Spawn")]
+    [Header("Spawn Points")]
     public Transform spawnPoint;
     public Transform decisionPoint;
-
-    CharacterController currentCharacter;
-
-    [Header("Swipe Points")]
+    public Transform waitingPoint;
     public Transform leftPoint;
     public Transform rightPoint;
     public Transform downPoint;
 
-    [Header("Theme Prefabs")]
+    [Header("Prefabs")]
     public List<GameObject> valentinePrefabs;
     public List<GameObject> halloweenPrefabs;
     public List<GameObject> christmasPrefabs;
     List<GameObject> currentTheme;
-
-    [Header("Theme UI")]
-    public GameObject valentineUI;
-    public GameObject halloweenUI;
-    public GameObject christmasUI;
-    GameObject currentThemeUI;
 
     [Header("UI")]
     public Slider timeSlider;
@@ -46,6 +34,14 @@ public class MainGameController : MonoBehaviour
     public List<TextMeshProUGUI> scoreText;
     public TextMeshProUGUI highScoreText;
     public GameObject gameOverPanel;
+
+    [Header("Theme UI Groups")]
+    public GameObject valentineUI;
+    public GameObject halloweenUI;
+    public GameObject christmasUI;
+
+    CharacterController currentCharacter;
+    CharacterController waitingCharacter;
 
     int score;
     int highScore;
@@ -59,108 +55,117 @@ public class MainGameController : MonoBehaviour
     void Start()
     {
         highScore = PlayerPrefs.GetInt("HighScore", 0);
+        highScoreText.text = $"Highest : {highScore}";
 
         currentTime = maxTime;
         timeSlider.maxValue = maxTime;
-        timeSlider.value = maxTime;
 
         gameOverPanel.SetActive(false);
-
         SetTheme();
         SpawnCharacter();
         UpdateUI();
-
-        SoundManager.Instance?.PlayMainBGM(mainBGM);
     }
 
     void Update()
     {
-        if (isGameOver) return;
+        if (isGameOver || currentCharacter == null) return;
 
         currentTime -= Time.deltaTime;
-        currentTime = Mathf.Max(currentTime, 0f);
+        currentTime = Mathf.Max(0, currentTime);
         timeSlider.value = currentTime;
-
         timeFillImage.color = currentTime <= 0.8f ? Color.red : Color.white;
 
-        if (currentTime <= 0f)
+        if (currentTime <= 0)
             GameOver();
     }
 
     void SpawnCharacter()
     {
-        if (currentCharacter != null)
-            Destroy(currentCharacter.gameObject);
+        if (waitingCharacter != null) return;
 
         GameObject prefab = currentTheme[Random.Range(0, currentTheme.Count)];
         GameObject obj = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
 
-        currentCharacter = obj.GetComponent<CharacterController>();
-        currentCharacter.Init(decisionPoint.position);
+        waitingCharacter = obj.GetComponent<CharacterController>();
+        waitingCharacter.EnableSwipe(false);
+        waitingCharacter.MoveTo(waitingPoint.position);
+
+        TryMoveWaitingToDecision();
+    }
+
+    void TryMoveWaitingToDecision()
+    {
+        if (currentCharacter != null) return;
+        if (waitingCharacter == null) return;
+
+        currentCharacter = waitingCharacter;
+        waitingCharacter = null;
+
+        currentCharacter.EnableSwipe(true);
+        currentCharacter.MoveTo(decisionPoint.position);
     }
 
     public void OnSwipe(EntityType input)
     {
-        if (currentCharacter == null || isGameOver) return;
+        if (isGameOver) return;
+        if (currentCharacter == null) return;
+        if (!currentCharacter.canSwipe) return;
 
-        Transform target =
-            input == EntityType.Dog ? leftPoint :
-            input == EntityType.Cat ? rightPoint :
-            downPoint;
+        Vector3 target =
+            input == EntityType.Dog ? leftPoint.position :
+            input == EntityType.Cat ? rightPoint.position :
+            downPoint.position;
 
-        currentCharacter.PlaySwipe(input, target.position);
-        CheckAnswer(input);
-    }
+        bool isCorrect = input == currentCharacter.type;
 
-    void CheckAnswer(EntityType input)
-    {
-        if (input == currentCharacter.type)
+        var character = currentCharacter;
+        character.EnableSwipe(false);
+        currentCharacter = null;
+
+        character.PlaySwipe(input, target, () =>
         {
+            Destroy(character.gameObject);
+
+            if (!isCorrect)
+            {
+                GameOver();
+                return;
+            }
+
             score++;
-            AddTime(1f);
+            currentTime = Mathf.Min(currentTime + 1f, maxTime);
+
             SetTheme();
             UpdateUI();
-            SpawnCharacter();
-        }
-        else
-        {
-            GameOver();
-        }
-    }
 
-    void AddTime(float v)
-    {
-        currentTime = Mathf.Min(currentTime + v, maxTime);
+            TryMoveWaitingToDecision();
+            SpawnCharacter();
+        });
     }
 
     void SetTheme()
     {
         int index = (score / 15) % 3;
 
+        valentineUI.SetActive(false);
+        halloweenUI.SetActive(false);
+        christmasUI.SetActive(false);
+
         if (index == 0)
         {
             currentTheme = valentinePrefabs;
-            SwitchThemeUI(valentineUI);
+            valentineUI.SetActive(true);
         }
         else if (index == 1)
         {
             currentTheme = halloweenPrefabs;
-            SwitchThemeUI(halloweenUI);
+            halloweenUI.SetActive(true);
         }
         else
         {
             currentTheme = christmasPrefabs;
-            SwitchThemeUI(christmasUI);
+            christmasUI.SetActive(true);
         }
-    }
-
-    void SwitchThemeUI(GameObject ui)
-    {
-        if (currentThemeUI != null)
-            currentThemeUI.SetActive(false);
-
-        currentThemeUI = ui;
-        currentThemeUI.SetActive(true);
     }
 
     void UpdateUI()
@@ -168,24 +173,22 @@ public class MainGameController : MonoBehaviour
         foreach (var t in scoreText)
             t.text = $"Score : {score}";
 
-        highScoreText.text = $"Highest : {highScore}";
+        if (score > highScore)
+        {
+            highScore = score;
+            PlayerPrefs.SetInt("HighScore", highScore);
+            highScoreText.text = $"Highest : {highScore}";
+        }
     }
 
     void GameOver()
     {
         if (isGameOver) return;
         isGameOver = true;
-
-        SoundManager.Instance?.StopBGM();
         gameOverPanel.SetActive(true);
-
-        if (score > highScore)
-        {
-            PlayerPrefs.SetInt("HighScore", score);
-        }
     }
 
-    public void RestartGame()
+    public void Replay()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }

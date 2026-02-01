@@ -1,18 +1,28 @@
-using UnityEngine;
+﻿using UnityEngine;
+using System;
+using System.Collections;
 
 public class CharacterController : MonoBehaviour
 {
     public MainGameController.EntityType type;
-    public Animator animator;
     public float moveSpeed = 8f;
+
+    [Header("Swipe Prefabs")]
+    public GameObject swipeLeftPrefab;
+    public GameObject swipeRightPrefab;
+    public GameObject swipeDownPrefab;
 
     Vector3 targetPos;
     bool moving;
 
-    public void Init(Vector3 decisionPos)
+    public bool canSwipe { get; private set; }
+
+    SpriteRenderer sprite;
+
+    void Awake()
     {
-        targetPos = decisionPos;
-        moving = true;
+        sprite = GetComponent<SpriteRenderer>();
+        canSwipe = false;
     }
 
     void Update()
@@ -24,17 +34,60 @@ public class CharacterController : MonoBehaviour
             targetPos,
             moveSpeed * Time.deltaTime
         );
+
+        if (Vector3.Distance(transform.position, targetPos) < 0.01f)
+            moving = false;
     }
 
-    public void PlaySwipe(MainGameController.EntityType input, Vector3 moveTarget)
+    public void MoveTo(Vector3 pos)
     {
-        targetPos = moveTarget;
+        targetPos = pos;
+        moving = true;
+    }
+
+    public void EnableSwipe(bool value)
+    {
+        canSwipe = value;
+    }
+
+    public void PlaySwipe(
+        MainGameController.EntityType input,
+        Vector3 target,
+        Action onFinish
+    )
+    {
+        if (sprite != null)
+            sprite.enabled = false;
+
+        GameObject prefab = null;
+
+        if (input == MainGameController.EntityType.Dog)
+            prefab = swipeLeftPrefab;
+        else if (input == MainGameController.EntityType.Cat)
+            prefab = swipeRightPrefab;
+        else
+            prefab = swipeDownPrefab;
+
+        if (prefab != null)
+        {
+            GameObject fx = Instantiate(prefab, transform.position, Quaternion.identity);
+
+            SwipeMove move = fx.GetComponent<SwipeMove>();
+            if (move != null)
+                move.Init(target, moveSpeed, null);
+        }
+
+        StartCoroutine(MoveAndFinish(target, onFinish));
+    }
+
+    IEnumerator MoveAndFinish(Vector3 target, Action onFinish)
+    {
+        targetPos = target;
         moving = true;
 
-        animator.SetTrigger(
-            input == MainGameController.EntityType.Dog ? "SwipeLeft" :
-            input == MainGameController.EntityType.Cat ? "SwipeRight" :
-            "SwipeDown"
-        );
+        while (moving)
+            yield return null;
+
+        onFinish?.Invoke();
     }
 }
