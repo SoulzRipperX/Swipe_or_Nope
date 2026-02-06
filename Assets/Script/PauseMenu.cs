@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -12,21 +10,23 @@ public class PauseMenu : MonoBehaviour
     void Start()
     {
         Time.timeScale = 1f;
+        PauseMenuCanvas.SetActive(false);
     }
 
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.Escape))
         {
-            if (Paused)
-            {
-                Play();
-            }
-            else
-            {
-                Stop();
-            }
+            TogglePause();
         }
+    }
+
+    public void TogglePause()
+    {
+        if (Paused)
+            Play();
+        else
+            Stop();
     }
 
     public void Play()
@@ -45,6 +45,7 @@ public class PauseMenu : MonoBehaviour
 
     public void MainMenuButton()
     {
+        Time.timeScale = 1f;
         SceneManager.LoadScene(sceneToLoad);
     }
 }
