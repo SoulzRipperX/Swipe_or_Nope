@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8165573221980010137
+--- !u!1 &1646192797742258202
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,10 +8,10 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5691784735440702954}
-  - component: {fileID: 237712882419041237}
-  - component: {fileID: 5694383406687930334}
-  - component: {fileID: 3286634092632655750}
+  - component: {fileID: 2586615177105190949}
+  - component: {fileID: 4966648820657422150}
+  - component: {fileID: 4038016403235506618}
+  - component: {fileID: 7848250426920917818}
   m_Layer: 0
   m_Name: Goat_1
   m_TagString: Untagged
@@ -19,28 +19,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5691784735440702954
+--- !u!4 &2586615177105190949
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8165573221980010137}
+  m_GameObject: {fileID: 1646192797742258202}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 41.252842, y: -39.547535, z: 0}
+  m_LocalPosition: {x: -15.063997, y: -19.457699, z: 0}
   m_LocalScale: {x: 0.15, y: 0.15, z: 0.15}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!212 &237712882419041237
+--- !u!212 &4966648820657422150
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8165573221980010137}
+  m_GameObject: {fileID: 1646192797742258202}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -75,7 +75,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 30738bc7c3105fc43b12bd2ab6719bb6, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3e9c847c89cb85b4ca7c327d7007bee4, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -86,17 +86,17 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!95 &5694383406687930334
+--- !u!95 &4038016403235506618
 Animator:
   serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8165573221980010137}
+  m_GameObject: {fileID: 1646192797742258202}
   m_Enabled: 1
   m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: a7f4efa9c26682949a997b008d5efc2c, type: 2}
+  m_Controller: {fileID: 9100000, guid: 5c221d559ebbd4849a9c1e0f4626c599, type: 2}
   m_CullingMode: 0
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -107,20 +107,20 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &3286634092632655750
+--- !u!114 &7848250426920917818
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8165573221980010137}
+  m_GameObject: {fileID: 1646192797742258202}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: dcac2af9da2a3aa4fab926ca01445c3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   type: 2
-  swipeLeftPrefab: {fileID: 2834372777289721180, guid: 8c187eda7626b7a49b131a35d2867a15, type: 3}
-  swipeRightPrefab: {fileID: 2834372777289721180, guid: 8c187eda7626b7a49b131a35d2867a15, type: 3}
-  swipeDownPrefab: {fileID: 2834372777289721180, guid: 8c187eda7626b7a49b131a35d2867a15, type: 3}
   moveSpeed: 4
+  swipeLeftPrefab: {fileID: 5288955551728959516, guid: 5c02f23aff88a0f4d961ed32d4d903aa, type: 3}
+  swipeRightPrefab: {fileID: 5288955551728959516, guid: 5c02f23aff88a0f4d961ed32d4d903aa, type: 3}
+  swipeDownPrefab: {fileID: 5288955551728959516, guid: 5c02f23aff88a0f4d961ed32d4d903aa, type: 3}

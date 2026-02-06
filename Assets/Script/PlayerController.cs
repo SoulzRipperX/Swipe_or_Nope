@@ -41,6 +41,7 @@ public class PlayerController : MonoBehaviour
     {
         if (delta.magnitude < swipeThreshold) return;
 
+        SoundManager.Instance?.Playclick();
         locked = true;
 
         if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))

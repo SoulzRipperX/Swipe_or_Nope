@@ -12,6 +12,8 @@ public class SoundManager : MonoBehaviour
     public AudioClip clickClip;
     public AudioClip correctClip;
     public AudioClip wrongClip;
+    [Header("BGM")]
+    public AudioClip mainBgmClip;
 
     void Awake()
     {
@@ -43,6 +45,12 @@ public class SoundManager : MonoBehaviour
         sfxSource.PlayOneShot(wrongClip);
     }
 
+    public void StopWrong()
+    {
+        if (sfxSource == null) return;
+        sfxSource.Stop();
+    }
+
 
     public void PlayBGM(AudioClip clip)
     {
@@ -54,14 +62,14 @@ public class SoundManager : MonoBehaviour
     }
     public void StopBGM()
     {
+        if (bgmSource == null) return;
         bgmSource.Stop();
-        bgmSource.clip = null;
     }
     public void PlayMainBGM(AudioClip clip)
     {
-        if (bgmSource == null || clip == null) return;
+        if (bgmSource == null || mainBgmClip == null) return;
 
-        bgmSource.clip = clip;
+        bgmSource.clip = mainBgmClip;
         bgmSource.loop = true;
         bgmSource.Play();
     }

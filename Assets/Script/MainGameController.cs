@@ -54,6 +54,7 @@ public class MainGameController : MonoBehaviour
 
     void Start()
     {
+        SoundManager.Instance?.PlayMainBGM(SoundManager.Instance.bgmSource.clip);
         highScore = PlayerPrefs.GetInt("HighScore", 0);
         highScoreText.text = $"Highest : {highScore}";
 
@@ -73,7 +74,7 @@ public class MainGameController : MonoBehaviour
         currentTime -= Time.deltaTime;
         currentTime = Mathf.Max(0, currentTime);
         timeSlider.value = currentTime;
-        timeFillImage.color = currentTime <= 0.8f ? Color.red : Color.white;
+        timeFillImage.color = currentTime <= 0.8f ? Color.red : Color.green;
 
         if (currentTime <= 0)
             GameOver();
@@ -128,10 +129,12 @@ public class MainGameController : MonoBehaviour
 
             if (!isCorrect)
             {
+                SoundManager.Instance?.PlayWrong();
                 GameOver();
                 return;
             }
 
+            SoundManager.Instance?.PlayCorrect();
             score++;
             currentTime = Mathf.Min(currentTime + 1f, maxTime);
 
@@ -185,11 +188,16 @@ public class MainGameController : MonoBehaviour
     {
         if (isGameOver) return;
         isGameOver = true;
+
+        SoundManager.Instance?.StopBGM();
+        SoundManager.Instance?.PlayWrong();
+
         gameOverPanel.SetActive(true);
     }
 
     public void Replay()
     {
+        SoundManager.Instance?.StopWrong();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
