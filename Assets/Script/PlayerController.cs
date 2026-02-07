@@ -10,14 +10,28 @@ public class PlayerController : MonoBehaviour
     {
         if (locked) return;
 
-#if UNITY_EDITOR || UNITY_STANDALONE
-        Mouse();
+        HandleKeyboard();
+
+#if UNITY_EDITOR || UNITY_STANDALONE || UNITY_WEBGL
+        HandleMouse();
 #else
-        Touch();
+        HandleTouch();
 #endif
     }
 
-    void Mouse()
+    void HandleKeyboard()
+    {
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+            DoSwipe(MainGameController.EntityType.Dog);
+
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+            DoSwipe(MainGameController.EntityType.Cat);
+
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+            DoSwipe(MainGameController.EntityType.Anomaly);
+    }
+
+    void HandleMouse()
     {
         if (Input.GetMouseButtonDown(0))
             startPos = Input.mousePosition;
@@ -26,13 +40,15 @@ public class PlayerController : MonoBehaviour
             Swipe((Vector2)Input.mousePosition - startPos);
     }
 
-    void Touch()
+    void HandleTouch()
     {
         if (Input.touchCount == 0) return;
 
         Touch t = Input.GetTouch(0);
+
         if (t.phase == TouchPhase.Began)
             startPos = t.position;
+
         if (t.phase == TouchPhase.Ended)
             Swipe(t.position - startPos);
     }
@@ -41,18 +57,23 @@ public class PlayerController : MonoBehaviour
     {
         if (delta.magnitude < swipeThreshold) return;
 
-        SoundManager.Instance?.Playclick();
-        locked = true;
-
         if (Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
-            MainGameController.Instance.OnSwipe(
-                delta.x < 0 ?
-                MainGameController.EntityType.Dog :
-                MainGameController.EntityType.Cat
-            );
+        {
+            DoSwipe(delta.x < 0
+                ? MainGameController.EntityType.Dog
+                : MainGameController.EntityType.Cat);
+        }
         else if (delta.y < 0)
-            MainGameController.Instance.OnSwipe(MainGameController.EntityType.Anomaly);
+        {
+            DoSwipe(MainGameController.EntityType.Anomaly);
+        }
+    }
 
+    void DoSwipe(MainGameController.EntityType type)
+    {
+        locked = true;
+        SoundManager.Instance?.Playclick();
+        MainGameController.Instance.OnSwipe(type);
         Invoke(nameof(Unlock), 0.2f);
     }
 
